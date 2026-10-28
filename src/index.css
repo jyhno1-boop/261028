@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+/* 사이트 공통 디자인 값: 포인트 컬러(남색 계열)와 글꼴 */
+@theme {
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Malgun Gothic', sans-serif;
+  --color-brand-50: #eef4fb;
+  --color-brand-100: #d6e4f5;
+  --color-brand-600: #1d4f91;
+  --color-brand-700: #173f75;
+  --color-brand-800: #11305a;
+}
+
+body {
+  @apply bg-white text-gray-800 antialiased;
+  /* 한글이 단어 중간에서 끊기지 않도록 */
+  word-break: keep-all;
+}

@@ -1,0 +1,17 @@
+# Netlify 배포 설정 파일입니다.
+[build]
+  # 사이트를 만드는(빌드) 명령어
+  command = "npm run build"
+  # 빌드 결과물이 들어가는 폴더
+  publish = "dist"
+
+[build.environment]
+  # Netlify에서 사용할 Node.js 버전
+  NODE_VERSION = "22"
+
+# 어떤 주소로 접속하거나 새로고침해도 index.html을 보여줍니다.
+# (이 설정이 없으면 /research 같은 주소에서 새로고침 시 404 오류가 납니다.)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
