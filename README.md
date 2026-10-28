@@ -43,7 +43,7 @@ firestore.rules Firestore 보안 규칙 (콘솔에 붙여 넣기)
 
 ## Firebase 연결 (Phase 2)
 
-1. `.env.example`을 복사해 `.env.local`을 만들고 Firebase 웹 앱 설정값을 채웁니다. (Netlify에는 Environment variables에 같은 이름으로 입력)
+1. Firebase 웹 앱 설정값은 `src/lib/firebase.ts`에 들어 있습니다. (다른 프로젝트로 바꿀 때만 `.env.example` 참고)
 2. `firestore.rules` 내용을 Firebase 콘솔 > Firestore Database > 규칙 탭에 붙여 넣고 게시합니다.
 3. Firestore에 `admins` 컬렉션을 만들고, 관리자 구글 이메일을 문서 ID로 하는 문서를 추가합니다.
 4. 사이트에서 관리자 계정으로 로그인 → 내 계정(`/account`) → "샘플 데이터 올리기"
