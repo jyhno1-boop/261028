@@ -8,7 +8,7 @@
 //  - 실시간 구독(onSnapshot) 대신 한 번만 불러오기(getDocs / getDoc)를 사용
 //  - 목록은 limit()으로 개수를 제한 (아래 PAGE_SIZE 사용)
 
-import type { Comment, CourseMaterial, Publication, RecentItem, Research } from '../types';
+import type { Comment, CourseMaterial, Publication, RecentItem, Research, SiteStats } from '../types';
 import { sampleComments, sampleCourses, samplePublications, sampleResearch } from '../data/sample';
 
 /** 목록 한 번에 불러올 최대 개수 (Phase 2에서 Firestore limit()에 사용) */
@@ -89,4 +89,14 @@ export async function getRecentItems(count = 5): Promise<RecentItem[]> {
     })),
   ];
   return items.sort(byNewest).slice(0, count);
+}
+
+/** 홈 화면 상단의 숫자 요약 */
+export async function getSiteStats(): Promise<SiteStats> {
+  // Phase 2에서는 getCountFromServer()로 개수만 셉니다. (문서를 모두 읽지 않아 읽기 횟수가 거의 들지 않음)
+  return {
+    ongoingResearch: sampleResearch.filter((r) => r.status === 'ongoing').length,
+    publications: samplePublications.length,
+    courseMaterials: sampleCourses.length,
+  };
 }

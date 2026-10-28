@@ -20,6 +20,8 @@ export const sampleResearch: Research[] = [
       { label: '연구 계획서 (Google Drive)', url: 'https://drive.google.com/' },
       { label: '중간 발표 자료', url: 'https://drive.google.com/' },
     ],
+    period: '2026.03 – 2027.02',
+    funding: '(예시) 한국연구재단 기본연구사업',
     createdAt: '2026-09-15',
   },
   {
@@ -34,6 +36,7 @@ export const sampleResearch: Research[] = [
     status: 'ongoing',
     members: ['○○○ 교수', '박안전 (석사과정)'],
     links: [{ label: '분석 결과 요약 (Google Drive)', url: 'https://drive.google.com/' }],
+    period: '2026.07 – 2027.06',
     createdAt: '2026-08-20',
   },
   {
@@ -48,6 +51,8 @@ export const sampleResearch: Research[] = [
     status: 'completed',
     members: ['○○○ 교수', '최자세 (석사 졸업)'],
     links: [{ label: '최종 보고서 (Google Drive)', url: 'https://drive.google.com/' }],
+    period: '2025.03 – 2026.02',
+    funding: '(예시) 산학협력 과제',
     createdAt: '2026-03-10',
   },
 ];

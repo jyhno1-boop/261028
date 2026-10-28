@@ -20,6 +20,8 @@ export interface Research {
   status: ResearchStatus;
   members: string[]; // 참여자
   links: ExternalLink[]; // 관련 링크
+  period?: string; // 연구 기간 (예: "2026.03 – 2027.02"), 없어도 됨
+  funding?: string; // 지원 기관 (예: "한국연구재단"), 없어도 됨
   createdAt: string; // 등록일 (예: "2026-09-01")
 }
 
@@ -65,4 +67,11 @@ export interface RecentItem {
   title: string;
   createdAt: string;
   path: string; // 클릭하면 이동할 사이트 내 주소
+}
+
+/** 홈 화면 상단의 숫자 요약 */
+export interface SiteStats {
+  ongoingResearch: number; // 진행 중인 연구 수
+  publications: number; // 논문·발표 수
+  courseMaterials: number; // 수업 자료 수
 }

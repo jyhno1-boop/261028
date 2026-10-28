@@ -4,15 +4,23 @@
 @theme {
   --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
     'Malgun Gothic', sans-serif;
-  --color-brand-50: #eef4fb;
-  --color-brand-100: #d6e4f5;
-  --color-brand-600: #1d4f91;
-  --color-brand-700: #173f75;
-  --color-brand-800: #11305a;
+  --color-brand-50: #f0f4fa;
+  --color-brand-100: #dbe5f2;
+  --color-brand-200: #b7cbe5;
+  --color-brand-500: #2f5f9e;
+  --color-brand-600: #1f4b85;
+  --color-brand-700: #183c6b;
+  --color-brand-800: #132f54;
+  --color-brand-900: #0d2140;
 }
 
 body {
-  @apply bg-white text-gray-800 antialiased;
+  @apply bg-white text-slate-700 antialiased;
   /* 한글이 단어 중간에서 끊기지 않도록 */
   word-break: keep-all;
+}
+
+/* 키보드로 이동할 때 현재 위치가 잘 보이도록 */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-brand-500;
 }
