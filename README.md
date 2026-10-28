@@ -2,7 +2,7 @@
 
 산업공학과 연구실 웹사이트입니다. 연구·수업 자료·논문을 보여주고, 이후 대학원생 토론(댓글) 기능으로 확장할 예정입니다.
 
-- **현재 단계: Phase 1** — 샘플 데이터로 동작하는 화면 틀 (Firebase 연동 전)
+- **현재 단계: Phase 2** — Firebase(Firestore + 구글 로그인) 연동. Firebase 설정값이 없으면 샘플 데이터로 동작합니다.
 - 기술: React 18 + Vite + TypeScript, Tailwind CSS, React Router / 배포: Netlify
 
 ## 내 컴퓨터에서 실행하기
@@ -33,18 +33,36 @@ npm run dev
 src/
   pages/        페이지 화면 (홈, 연구 목록/상세, 수업 자료 목록/상세, 논문·발표)
   components/   여러 페이지에서 함께 쓰는 부품 (메뉴, 푸터, 댓글 영역 등)
-  lib/          dataService.ts(데이터 불러오기 — Phase 2에서 이 파일만 Firestore로 교체), 도구 함수
+  lib/          dataService.ts(모든 데이터 불러오기의 입구), firebase.ts(연결 설정), sources/(샘플·Firestore 출처)
   data/         연구실 정보, 샘플 데이터
   types/        데이터 모양(타입) 정의
 netlify.toml    Netlify 배포 설정 (새로고침 404 방지 포함)
+firestore.rules Firestore 보안 규칙 (콘솔에 붙여 넣기)
 .env.example    Phase 2용 Firebase 환경변수 이름 목록
+```
+
+## Firebase 연결 (Phase 2)
+
+1. `.env.example`을 복사해 `.env.local`을 만들고 Firebase 웹 앱 설정값을 채웁니다. (Netlify에는 Environment variables에 같은 이름으로 입력)
+2. `firestore.rules` 내용을 Firebase 콘솔 > Firestore Database > 규칙 탭에 붙여 넣고 게시합니다.
+3. Firestore에 `admins` 컬렉션을 만들고, 관리자 구글 이메일을 문서 ID로 하는 문서를 추가합니다.
+4. 사이트에서 관리자 계정으로 로그인 → 내 계정(`/account`) → "샘플 데이터 올리기"
+
+Firestore 구조:
+
+```
+research/{연구ID}                    연구
+research/{연구ID}/comments/{댓글ID}   토론 댓글
+courses/{자료ID}                      수업 자료
+publications/{논문ID}                 논문·발표
+admins/{이메일}                        관리자 목록 (콘솔에서만 추가)
 ```
 
 ## 요금제 원칙 (Firebase Spark 무료)
 
 - Firestore + 구글 로그인만 사용. Cloud Functions, Cloud Storage, Firebase Hosting 사용 안 함.
 - 파일은 업로드하지 않고 Google Drive 공유 링크로 등록.
-- 실시간 구독 대신 한 번만 불러오기, 목록은 개수 제한(`PAGE_SIZE`).
+- 실시간 구독이 없는 가벼운 `firestore/lite` 사용, 목록은 개수 제한(`PAGE_SIZE`), 한 번 읽은 결과는 기억(캐시), 개수는 `getCount()`로 셈.
 
 ## 기타
 

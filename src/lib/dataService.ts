@@ -1,102 +1,93 @@
-// 데이터를 불러오는 모든 함수를 이 파일 한 곳에 모았습니다.
+// 데이터를 불러오는 모든 함수는 이 파일을 통해서만 사용합니다.
 // 화면(페이지)들은 데이터가 어디서 오는지 모르고 이 함수들만 호출합니다.
 //
-// [Phase 2 안내]
-// 이 파일 내부만 Firestore 코드로 바꾸면 화면 코드는 고칠 필요가 없습니다.
-// 그래서 지금은 샘플 데이터를 바로 돌려줘도 되지만, 일부러 모두 async 함수로 만들었습니다.
-// Firestore 사용량(읽기 횟수)을 아끼기 위해 Phase 2에서도 다음 원칙을 지킵니다.
-//  - 실시간 구독(onSnapshot) 대신 한 번만 불러오기(getDocs / getDoc)를 사용
-//  - 목록은 limit()으로 개수를 제한 (아래 PAGE_SIZE 사용)
+// - Firebase 설정값이 있으면 → Firestore에서 읽음 (sources/firestoreSource.ts)
+// - 설정값이 없으면       → 샘플 데이터 사용 (sources/sampleSource.ts)
+//
+// 같은 자료를 여러 번 보더라도 Firestore를 한 번만 읽도록, 한 번 읽은 결과는
+// 페이지를 새로고침하기 전까지 기억해 둡니다(캐시). → 무료 사용량 절약
 
 import type { Comment, CourseMaterial, Publication, RecentItem, Research, SiteStats } from '../types';
-import { sampleComments, sampleCourses, samplePublications, sampleResearch } from '../data/sample';
+import { db, isFirebaseConfigured } from './firebase';
+import { createFirestoreSource } from './sources/firestoreSource';
+import { sampleSource } from './sources/sampleSource';
+import type { DataSource } from './sources/types';
 
-/** 목록 한 번에 불러올 최대 개수 (Phase 2에서 Firestore limit()에 사용) */
+/** 목록 한 번에 불러올 최대 개수 */
 export const PAGE_SIZE = 20;
 
-/** 등록일(createdAt) 기준 최신순 정렬 */
-function byNewest<T extends { createdAt: string }>(a: T, b: T): number {
-  return b.createdAt.localeCompare(a.createdAt);
+/** 지금 샘플 데이터를 쓰는 중인지 (화면 상단 안내 표시용) */
+export const isUsingSampleData: boolean = !isFirebaseConfigured;
+
+const source: DataSource = db ? createFirestoreSource(db) : sampleSource;
+
+// ---------- 캐시(한 번 읽은 결과 기억) ----------
+const cache = new Map<string, Promise<unknown>>();
+
+function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
+  const hit = cache.get(key);
+  if (hit) return hit as Promise<T>;
+  const promise = load().catch((error: unknown) => {
+    // 실패한 결과는 기억하지 않아, 다음에 다시 시도할 수 있게 합니다.
+    cache.delete(key);
+    console.error(`[dataService] ${key} 불러오기 실패`, error);
+    throw error;
+  });
+  cache.set(key, promise);
+  return promise;
+}
+
+/** 기억해 둔 결과를 모두 지웁니다. (데이터를 새로 올린 뒤 사용) */
+export function clearDataCache(): void {
+  cache.clear();
 }
 
 // ---------- 연구 ----------
 
 /** 연구 목록 (최신순) */
-export async function getResearchList(): Promise<Research[]> {
-  return [...sampleResearch].sort(byNewest).slice(0, PAGE_SIZE);
+export function getResearchList(): Promise<Research[]> {
+  return cached('researchList', () => source.getResearchList(PAGE_SIZE));
 }
 
 /** 연구 하나 (없으면 null) */
-export async function getResearchById(id: string): Promise<Research | null> {
-  return sampleResearch.find((r) => r.id === id) ?? null;
+export function getResearchById(id: string): Promise<Research | null> {
+  return cached(`research/${id}`, () => source.getResearchById(id));
 }
 
 // ---------- 수업 자료 ----------
 
 /** 수업 자료 목록 (최신순) */
-export async function getCourseMaterials(): Promise<CourseMaterial[]> {
-  return [...sampleCourses].sort(byNewest).slice(0, PAGE_SIZE);
+export function getCourseMaterials(): Promise<CourseMaterial[]> {
+  return cached('courseList', () => source.getCourseMaterials(PAGE_SIZE));
 }
 
 /** 수업 자료 하나 (없으면 null) */
-export async function getCourseMaterialById(id: string): Promise<CourseMaterial | null> {
-  return sampleCourses.find((c) => c.id === id) ?? null;
+export function getCourseMaterialById(id: string): Promise<CourseMaterial | null> {
+  return cached(`course/${id}`, () => source.getCourseMaterialById(id));
 }
 
 // ---------- 논문·발표 ----------
 
 /** 논문·발표 목록 (연도 최신순) */
-export async function getPublications(): Promise<Publication[]> {
-  return [...samplePublications].sort((a, b) => b.year - a.year || byNewest(a, b)).slice(0, PAGE_SIZE);
+export function getPublications(): Promise<Publication[]> {
+  return cached('publicationList', () => source.getPublications(PAGE_SIZE));
 }
 
 // ---------- 토론(댓글) ----------
 
 /** 특정 연구에 달린 댓글 목록 (오래된 순) */
-export async function getComments(researchId: string): Promise<Comment[]> {
-  return sampleComments
-    .filter((c) => c.researchId === researchId)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .slice(0, PAGE_SIZE);
+export function getComments(researchId: string): Promise<Comment[]> {
+  return cached(`comments/${researchId}`, () => source.getComments(researchId, PAGE_SIZE));
 }
 
 // ---------- 홈 화면 ----------
 
 /** 최근 등록된 자료 (연구·수업·논문을 합쳐 최신순으로 count개) */
-export async function getRecentItems(count = 5): Promise<RecentItem[]> {
-  // Phase 2에서는 각 컬렉션에서 orderBy('createdAt','desc').limit(count)로 count개씩만 읽어 합칩니다.
-  const items: RecentItem[] = [
-    ...sampleResearch.map((r) => ({
-      kind: 'research' as const,
-      id: r.id,
-      title: r.title,
-      createdAt: r.createdAt,
-      path: `/research/${r.id}`,
-    })),
-    ...sampleCourses.map((c) => ({
-      kind: 'course' as const,
-      id: c.id,
-      title: `[${c.courseName}] ${c.title}`,
-      createdAt: c.createdAt,
-      path: `/courses/${c.id}`,
-    })),
-    ...samplePublications.map((p) => ({
-      kind: 'publication' as const,
-      id: p.id,
-      title: p.title,
-      createdAt: p.createdAt,
-      path: '/publications',
-    })),
-  ];
-  return items.sort(byNewest).slice(0, count);
+export function getRecentItems(count = 5): Promise<RecentItem[]> {
+  return cached(`recent/${count}`, () => source.getRecentItems(count));
 }
 
 /** 홈 화면 상단의 숫자 요약 */
-export async function getSiteStats(): Promise<SiteStats> {
-  // Phase 2에서는 getCountFromServer()로 개수만 셉니다. (문서를 모두 읽지 않아 읽기 횟수가 거의 들지 않음)
-  return {
-    ongoingResearch: sampleResearch.filter((r) => r.status === 'ongoing').length,
-    publications: samplePublications.length,
-    courseMaterials: sampleCourses.length,
-  };
+export function getSiteStats(): Promise<SiteStats> {
+  return cached('stats', () => source.getSiteStats());
 }

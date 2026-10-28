@@ -1,6 +1,7 @@
 import { getComments } from '../lib/dataService';
 import { formatDateTime } from '../lib/format';
 import { useAsync } from '../lib/useAsync';
+import { useAuth } from './AuthProvider';
 import { LockIcon } from './Icons';
 import LoadState from './LoadState';
 import { useNotice } from './NoticeProvider';
@@ -11,11 +12,12 @@ interface CommentSectionProps {
 }
 
 // 연구 상세 페이지 하단의 토론(댓글) 영역
-// Phase 1: 샘플 댓글만 보여주고, 입력창은 "준비 중" 상태입니다.
+// Phase 2: 댓글 목록은 Firestore에서 읽고, 입력창은 아직 "준비 중" 상태입니다.
 // Phase 3: 로그인한 사용자가 실제로 댓글을 작성하도록 연결합니다.
 export default function CommentSection({ researchId }: CommentSectionProps) {
   const { data: comments, loading, error } = useAsync(() => getComments(researchId), [researchId]);
   const notify = useNotice();
+  const { user } = useAuth();
 
   return (
     <section className="mt-14 border-t border-slate-200 pt-10" aria-labelledby="discussion-title">
@@ -65,7 +67,7 @@ export default function CommentSection({ researchId }: CommentSectionProps) {
           id="comment-input"
           disabled
           rows={3}
-          placeholder="로그인 후 작성 가능 (준비 중)"
+          placeholder={user ? '댓글 작성 기능은 준비 중입니다' : '로그인 후 작성 가능 (준비 중)'}
           className="mt-2 w-full cursor-not-allowed resize-none rounded-md border border-slate-300 bg-white p-3 text-sm placeholder:text-slate-400"
         />
         <div className="mt-3 space-y-3 sm:flex sm:items-start sm:justify-between sm:gap-4 sm:space-y-0">

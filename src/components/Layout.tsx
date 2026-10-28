@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import SampleDataBanner from './SampleDataBanner';
 
 // 모든 페이지에 공통으로 들어가는 틀: 상단 메뉴 + 본문 + 하단 정보
 export default function Layout() {
@@ -14,6 +15,7 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <SampleDataBanner />
       <Header />
       <main className="flex-1">
         <Outlet />

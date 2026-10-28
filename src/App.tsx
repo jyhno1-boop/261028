@@ -6,6 +6,7 @@ import ResearchDetailPage from './pages/ResearchDetailPage';
 import CourseListPage from './pages/CourseListPage';
 import CourseDetailPage from './pages/CourseDetailPage';
 import PublicationListPage from './pages/PublicationListPage';
+import AccountPage from './pages/AccountPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // 주소(URL)와 페이지를 연결하는 곳입니다.
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/courses" element={<CourseListPage />} />
         <Route path="/courses/:id" element={<CourseDetailPage />} />
         <Route path="/publications" element={<PublicationListPage />} />
+        <Route path="/account" element={<AccountPage />} />
         {/* 위에 없는 주소는 "페이지를 찾을 수 없음" 화면 */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
